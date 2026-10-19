@@ -1,0 +1,16 @@
+{
+    "id": "i18n",
+    "name": "Мультиязычность",
+    "version": "0.1.0",
+    "core": "^0.4",
+    "entry": "plugin.php",
+    "description": "Языки сайта: адреса /en/…, переводы страниц и словари интерфейса, переключатель языка, hreflang.",
+    "admin": {
+        "menu": "Языки"
+    },
+    "autoload": {
+        "I18n\\": "lib/I18n"
+    },
+    "provides": ["i18n"],
+    "hooks": ["request", "url", "menu", "head", "output"]
+}
