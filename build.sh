@@ -22,4 +22,4 @@ out="dist/i18n-${version}.zip"
 git archive --format=zip --prefix=i18n/ -o "$out" HEAD -- "${files[@]}"
 
 echo "Готово: $out"
-echo "Установка: распакуйте в public_html/plugins/ (получится plugins/i18n/). Нужно ядро motorchk ≥ 0.4.0."
+echo "Установка: распакуйте в public_html/plugins/ (получится plugins/i18n/). Нужно ядро motorchk ≥ 0.4.0 (с readJsonStrict)."
