@@ -1,0 +1,25 @@
+.i18n-admin { max-width: 70rem; }
+.i18n-tabs { display: flex; gap: .25rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 1.25rem; }
+.i18n-tab { padding: .5rem .9rem; border-radius: .375rem .375rem 0 0; color: #374151; text-decoration: none; }
+.i18n-tab:hover { background: #f3f4f6; }
+.i18n-tab.is-active { background: #111827; color: #fff; }
+.i18n-h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 .75rem; }
+.i18n-h2 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
+.i18n-muted { color: #6b7280; font-size: .9rem; }
+.i18n-alert { padding: .6rem .9rem; border-radius: .375rem; margin: 0 0 1rem; }
+.i18n-alert ul { margin: .25rem 0 0 1.2rem; list-style: disc; }
+.i18n-alert--error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.i18n-alert--ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.i18n-table { border-collapse: collapse; width: 100%; margin: .5rem 0; }
+.i18n-table th, .i18n-table td { border-bottom: 1px solid #e5e7eb; padding: .4rem .5rem; text-align: left; vertical-align: top; }
+.i18n-table th { font-weight: 600; font-size: .85rem; color: #374151; }
+.i18n-table input[type=text], .i18n-table textarea, .i18n-form select, .i18n-form textarea { border: 1px solid #d1d5db; border-radius: .3rem; padding: .3rem .45rem; font: inherit; width: 100%; box-sizing: border-box; }
+.i18n-table input[size] { width: 6rem; }
+.i18n-dict textarea { min-height: 2.1rem; resize: vertical; }
+.i18n-check { display: block; margin: .35rem 0; }
+.i18n-indent { margin-left: 1.6rem; }
+.i18n-indent select { width: auto; margin-left: .4rem; }
+.i18n-btn { display: inline-block; background: #111827; color: #fff; border: 0; border-radius: .375rem; padding: .5rem 1rem; cursor: pointer; text-decoration: none; }
+.i18n-btn--ghost { background: #fff; color: #111827; border: 1px solid #d1d5db; }
+.i18n-help, .i18n-io { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+.i18n-admin code { background: #f3f4f6; padding: 0 .25rem; border-radius: .2rem; }
