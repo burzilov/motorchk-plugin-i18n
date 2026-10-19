@@ -3,6 +3,7 @@
 namespace I18n;
 
 use PluginContext;
+use PluginDataException;
 
 /**
  * Словарь строк интерфейса: plugin-data/i18n/dictionary.json, {"ключ": {"ru": "…", "en": "…"}}.
@@ -28,12 +29,17 @@ final class Dictionary
     {
         if ($this->strings === null) {
             $this->strings = [];
-            $raw = $this->plugin->readFile(self::FILE);
-            if ($raw !== null) {
-                $decoded = json_decode($raw, true);
-                [$clean, $errors] = is_array($decoded) ? self::parse($decoded) : [null, ['не JSON']];
+            try {
+                $decoded = $this->plugin->readJsonStrict(self::FILE, null);
+            } catch (PluginDataException $e) {
+                // сайт не падает: пустой словарь, файл не трогаем, ошибку видно в админке
+                $decoded = null;
+                $this->error = $e->getMessage() . ' Словарь пуст; сохранение или импорт с заменой перезапишут файл.';
+            }
+            if ($decoded !== null) {
+                [$clean, $errors] = self::parse($decoded);
                 if ($clean === null) {
-                    $this->error = 'Файл словаря ' . self::FILE . ' повреждён (' . implode('; ', $errors) . ') — словарь пуст. Сохранение или импорт перезапишут файл.';
+                    $this->error = 'Файл словаря plugin-data/' . $this->plugin->id() . '/' . self::FILE . ' содержит ошибки (' . implode('; ', $errors) . ') — словарь пуст. Сохранение или импорт с заменой перезапишут файл.';
                 } else {
                     $this->strings = $clean;
                 }

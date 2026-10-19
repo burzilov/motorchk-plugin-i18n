@@ -3,6 +3,7 @@
 namespace I18n;
 
 use PluginContext;
+use PluginDataException;
 
 /**
  * Настройки языков: plugin-data/i18n/settings.json.
@@ -47,17 +48,18 @@ final class Settings
     {
         if ($this->data === null) {
             $this->data = self::defaults();
-            $raw = $this->plugin->readFile(self::FILE);
-            if ($raw !== null) {
-                $decoded = json_decode($raw, true);
-                if (!is_array($decoded)) {
-                    $this->error = 'Файл настроек ' . self::FILE . ' повреждён — действуют настройки по умолчанию. Сохранение формы перезапишет файл.';
-                } else {
-                    [$clean, $errors] = self::validate($decoded);
-                    $this->data = $clean ?? self::defaults();
-                    if ($errors !== []) {
-                        $this->error = 'Файл настроек содержит ошибки (' . implode('; ', $errors) . ') — действуют настройки по умолчанию.';
-                    }
+            try {
+                $decoded = $this->plugin->readJsonStrict(self::FILE, null);
+            } catch (PluginDataException $e) {
+                // сайт не падает: настройки по умолчанию, файл не трогаем, ошибку видно в админке
+                $decoded = null;
+                $this->error = $e->getMessage() . ' Действуют настройки по умолчанию; сохранение формы перезапишет файл.';
+            }
+            if ($decoded !== null) {
+                [$clean, $errors] = self::validate($decoded);
+                $this->data = $clean ?? self::defaults();
+                if ($errors !== []) {
+                    $this->error = 'Файл настроек plugin-data/' . $this->plugin->id() . '/' . self::FILE . ' содержит ошибки (' . implode('; ', $errors) . ') — действуют настройки по умолчанию.';
                 }
             }
         }

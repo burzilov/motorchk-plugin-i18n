@@ -261,6 +261,9 @@ check($st === 404, 'один язык: /en/… — 404');
 file_put_contents($data . '/settings.json', json_encode($settingsFile));
 
 // повреждённые файлы
+file_put_contents($data . '/dictionary.json', '"строка"');
+[$st, $en] = $public('/en/about');
+check($st === 200 && str_contains($en, 'aria-label="Язык"') && file_get_contents($data . '/dictionary.json') === '"строка"', 'словарь не объект: сайт работает, файл не перезаписан');
 file_put_contents($data . '/dictionary.json', '{broken');
 [$st, $en] = $public('/en/about');
 check($st === 200 && str_contains($en, 'aria-label="Язык"') && file_get_contents($data . '/dictionary.json') === '{broken', 'повреждённый словарь: сайт работает, файл не перезаписан');
@@ -283,7 +286,7 @@ $call = static function (string $method, string $path, array $post = []) use ($c
     }
 };
 [$st, $body] = $admin('/admin-panel/plugins/i18n');
-check($st === 200 && str_contains($body, 'Файл настроек settings.json повреждён') && str_contains($body, 'name="default" value="ru"'), 'страница «Языки»: предупреждение о повреждённом файле, форма с настройками по умолчанию');
+check($st === 200 && str_contains($body, 'Файл plugin-data/i18n/settings.json повреждён (не JSON') && str_contains($body, 'name="default" value="ru"'), 'страница «Языки»: предупреждение о повреждённом файле, форма с настройками по умолчанию');
 check(!str_contains($body, 'data-i18n-switcher') && !str_contains($body, 'switcher.css') && !str_contains($body, 'rel="alternate"'), 'хуки сайта на админку не действуют');
 [$st, $body] = $call('POST', '/', ['locales' => [['code' => 'ru', 'name' => 'Русский'], ['code' => 'EN', 'name' => 'English'], ['code' => 'de', 'name' => 'Deutsch', 'remove' => '1'], ['code' => 'pt-br', 'name' => '']], 'default' => 'ru', 'remember' => '1', 'switcher' => 'auto', 'switcher_position' => 'top-left', 'rewrite_links' => '1']);
 $saved = json_decode((string) file_get_contents($data . '/settings.json'), true);
@@ -294,7 +297,7 @@ check(array_column(json_decode((string) file_get_contents($data . '/settings.jso
 $call('POST', '/', ['locales' => [['code' => 'ru', 'name' => 'Русский'], ['code' => 'en', 'name' => 'English']], 'default' => 'ru', 'remember' => '1', 'switcher' => 'auto', 'switcher_position' => 'bottom-right', 'rewrite_links' => '1']);
 
 [$st, $body] = $admin('/admin-panel/plugins/i18n/dictionary');
-check($st === 200 && str_contains($body, 'Файл словаря dictionary.json повреждён'), 'словарь: предупреждение о повреждённом файле');
+check($st === 200 && str_contains($body, 'Файл plugin-data/i18n/dictionary.json повреждён (не JSON'), 'словарь: предупреждение о повреждённом файле');
 [$st, $body] = $call('POST', '/import', ['json' => '{"a": {"ru": "А"}}', 'mode' => 'merge']);
 check($st === 422 && str_contains($body, 'Заменить словарь целиком') && file_get_contents($data . '/dictionary.json') === '{broken', 'импорт с добавлением в повреждённый словарь запрещён');
 [$st] = $call('POST', '/import', ['json' => json_encode(['format' => 'motorchk-i18n-dictionary', 'version' => 1, 'strings' => ['cart.add' => ['ru' => 'В корзину', 'en' => 'Add to cart'], 'Главная' => ['en' => 'Home']]], JSON_UNESCAPED_UNICODE), 'mode' => 'replace']);
