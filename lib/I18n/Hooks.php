@@ -76,7 +76,7 @@ final class Hooks
         $result = ['locale' => $default, 'path' => $path, 'redirect' => null, 'status' => 302, 'cookie' => null];
         $isGet = in_array($method, ['GET', 'HEAD'], true);
 
-        // ?lang=en — явный выбор (ссылки переключателя на главную, старые адреса ?lang): запомнить и перейти на чистый адрес
+        // ?lang=en — явный выбор (ссылка переключателя на главную основного языка): запомнить и перейти на чистый адрес
         $lang = $query['lang'] ?? null;
         if ($isGet && is_string($lang) && in_array(strtolower($lang), $locales, true)) {
             $lang = strtolower($lang);

@@ -3,7 +3,6 @@
 namespace I18n;
 
 use LocaleProvider;
-use PluginContext;
 use SiteLocale;
 
 /**
@@ -179,7 +178,7 @@ final class Service implements LocaleProvider
      * Ссылка переключателя. На главную основного языка — с ?lang=…, чтобы хук запомнил выбор
      * (иначе запомненный в cookie язык снова перенаправит на /en/).
      */
-    public function switchHref(string $path, string $locale): string
+    private function switchHref(string $path, string $locale): string
     {
         $url = $this->url($path, $locale);
         if ($url === '/' && $locale === $this->defaultLocale() && $this->settings->get('remember')) {

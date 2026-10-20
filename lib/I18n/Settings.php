@@ -74,11 +74,6 @@ final class Settings
         return $this->error;
     }
 
-    public function exists(): bool
-    {
-        return $this->plugin->readFile(self::FILE) !== null;
-    }
-
     /** @return list<string> коды языков, первым — основной */
     public function codes(): array
     {

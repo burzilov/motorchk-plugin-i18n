@@ -95,7 +95,7 @@ final class AdminController
         }
         $this->page('dictionary', 'Словарь', [
             'rows' => $rows,
-            'locales' => $this->dictionaryLocales(),
+            'locales' => $this->service->locales(),
             'names' => $this->service->names(),
             'errors' => $errors,
             'notice' => match ($notice) {
@@ -108,7 +108,7 @@ final class AdminController
 
     private function saveDictionary(PluginRequest $r): void
     {
-        $locales = $this->dictionaryLocales();
+        $locales = $this->service->locales();
         $rows = [];
         $strings = [];
         $errors = [];
@@ -199,12 +199,6 @@ final class AdminController
         $result = $r->input('mode') === 'replace' ? $strings : Dictionary::merge($this->dictionary->all(), $strings);
         $this->dictionary->save($result);
         $this->plugin->redirect($this->plugin->adminUrl('/dictionary?saved=imported-' . count($strings)));
-    }
-
-    /** @return list<string> языки настроек и встречающиеся в словаре */
-    private function dictionaryLocales(): array
-    {
-        return $this->service->locales();
     }
 
     /** @return array<string, int> язык → число файлов перевода *.{язык}.md в content/ */

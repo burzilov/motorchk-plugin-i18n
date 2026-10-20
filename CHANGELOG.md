@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 — 2026-10-20
+
+- Чистка кода без изменения поведения: убран неиспользуемый `Settings::exists()`, лишняя обёртка
+  `AdminController::dictionaryLocales()` (языки словаря — `Service::locales()`), `Service::switchHref()` стал
+  внутренним (снаружи не вызывался), убран неиспользуемый `use PluginContext` в `Service`. Комментарий и пример
+  в README про `?lang` — без отсылок к старым адресам customizer (сам `?lang=xx` — явный выбор языка — остаётся).
+
 ## 0.1.1 — 2026-10-20
 
 - `settings.json` и `dictionary.json` читаются через `readJsonStrict()` ядра 0.4.0 вместо своей проверки
