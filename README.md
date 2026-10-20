@@ -98,14 +98,14 @@ content/about/team.en.md → /en/about/team
 $i18n = $plugin->service('i18n');            // null, если плагин не установлен
 $i18n?->locale();                            // 'en'
 $i18n?->t('cart.add', 'В корзину');
-$i18n?->localized(['ru' => 'Ловушка', 'en' => 'Catcher']);  // текущий → основной → первое непустое
 $i18n?->url('/customizer/razor', 'en');      // '/en/customizer/razor'
 $i18n?->switcher();
 ```
 
 Для языка и адресов достаточно API ядра — оно работает и без плагина: `$plugin->locale()`,
-`$plugin->localized([...])`, `$plugin->publicUrl('/x')` (с плагином — `/en/…`), опция
-`renderPublic(..., ['alternates' => true])` для hreflang.
+`$plugin->localized(['ru' => 'Ловушка', 'en' => 'Catcher'])` (текущий язык → основной → первое непустое; в теме —
+`SiteLocale::localized([...])`), `$plugin->publicUrl('/x')` (с плагином — `/en/…`), опция
+`renderPublic(..., ['alternates' => true])` для hreflang. Своего `localized()` у службы нет.
 
 ## Данные
 

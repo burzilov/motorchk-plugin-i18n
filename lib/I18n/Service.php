@@ -10,7 +10,6 @@ use SiteLocale;
  *
  *   $i18n->locale()                       текущий язык ('ru', 'en')
  *   $i18n->t('cart.add', 'В корзину')     строка словаря на текущем языке → основном → $fallback → ключ
- *   $i18n->localized(['ru' => …, 'en' => …])  значение на текущем языке → основном → первое непустое
  *   $i18n->url('/about', 'en')            адрес на языке: '/en/about'
  *   $i18n->switcher()                     HTML переключателя языка
  */
@@ -60,25 +59,6 @@ final class Service implements LocaleProvider
             ?? $this->dictionary->get($key, $this->defaultLocale())
             ?? $fallback
             ?? $key;
-    }
-
-    /**
-     * @param array<string, mixed> $values ['ru' => 'Ловушка', 'en' => 'Catcher']
-     */
-    public function localized(array $values, ?string $locale = null): mixed
-    {
-        foreach ([$locale ?? $this->locale(), $this->defaultLocale()] as $code) {
-            if (isset($values[$code]) && $values[$code] !== '') {
-                return $values[$code];
-            }
-        }
-        foreach ($values as $value) {
-            if ($value !== null && $value !== '') {
-                return $value;
-            }
-        }
-
-        return null;
     }
 
     /** Адрес внутри сайта на языке $locale (по умолчанию — текущем). Внешние и служебные адреса не меняются. */

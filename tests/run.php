@@ -182,7 +182,9 @@ check($svc->url('/about?x=1#top', 'en') === '/en/about?x=1#top' && $svc->url('ht
 check($svc->url('/admin-panel/', 'en') === '/admin-panel/' && $svc->url('/plugin-assets/x/a.css', 'en') === '/plugin-assets/x/a.css' && $svc->url('/api/forms/submit', 'en') === '/api/forms/submit' && $svc->url('/english', 'en') === '/en/english', 'url(): служебные адреса ядра не меняются, /english — не префикс');
 check($svc->url('/about', 'xx') === '/about' && $svc->prefixLocale('/fr/about') === null && $svc->stripPrefix('/de') === '/', 'неизвестный язык — без префикса');
 check($svc->t('i18n.switcher', null, 'en') === 'Language' && $svc->t('i18n.switcher', null, 'de') === 'Язык' && $svc->t('nope', 'Запасной') === 'Запасной' && $svc->t('nope') === 'nope', 't(): язык → основной → fallback → ключ');
-check($svc->localized(['ru' => 'Ловушка', 'en' => 'Catcher'], 'en') === 'Catcher' && $svc->localized(['ru' => 'Ловушка', 'en' => ''], 'en') === 'Ловушка' && $svc->localized(['en' => 'Only'], 'de') === 'Only' && $svc->localized([], 'en') === null, 'localized(): язык → основной → первое непустое');
+SiteLocale::init(new PluginManager($config), false);
+check(SiteLocale::localized(['ru' => 'Ловушка', 'en' => 'Catcher'], 'en') === 'Catcher' && SiteLocale::localized(['ru' => 'Ловушка', 'en' => ''], 'en') === 'Ловушка' && SiteLocale::localized(['en' => 'Only'], 'de') === 'Only' && SiteLocale::localized([], 'en') === null && !method_exists($svc, 'localized'), 'значение по языку — SiteLocale::localized() ядра со службой (своей копии в службе нет)');
+SiteLocale::reset();
 check($svc->locale() === 'ru', 'locale() вне запроса — основной язык');
 file_put_contents($data . '/settings.json', json_encode($settingsFile));
 
