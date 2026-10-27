@@ -1,0 +1,67 @@
+name: Release
+
+# Тег v<версия> → тесты → ./release.sh (архив dist/i18n-<версия>.zip из тега) → GitHub Release с архивом.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  # Ядро для тестов (tests/run.php требует core с vendor/). Поднимайте вместе с "core" в plugin.json.
+  CORE_REF: v0.5.6
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: plugin
+          fetch-depth: 0
+
+      - name: Checkout motorchk core
+        uses: actions/checkout@v4
+        with:
+          repository: burzilov/motorchk
+          ref: ${{ env.CORE_REF }}
+          path: core
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Verify tag matches plugin.json version
+        working-directory: plugin
+        run: |
+          VERSION=$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' plugin.json | head -n1)
+          if [ "${GITHUB_REF_NAME}" != "v${VERSION}" ]; then
+            echo "Тег ${GITHUB_REF_NAME} не совпадает с version ${VERSION} в plugin.json"
+            exit 1
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Install core dependencies
+        working-directory: core
+        run: composer install --no-dev --no-interaction --no-progress
+
+      - name: Tests
+        working-directory: plugin
+        run: php tests/run.php "$GITHUB_WORKSPACE/core"
+
+      - name: Build zip
+        working-directory: plugin
+        run: ./release.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: plugin/dist/i18n-${{ env.VERSION }}.zip
+          generate_release_notes: true

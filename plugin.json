@@ -1,7 +1,7 @@
 {
     "id": "i18n",
     "name": "Мультиязычность",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "core": "^0.5",
     "license": "MIT",
     "entry": "plugin.php",

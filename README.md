@@ -1,5 +1,7 @@
 # Мультиязычность (i18n) — плагин motorchk
 
+**[Скачать](https://github.com/burzilov/motorchk-plugin-i18n/releases/latest)** — последний ZIP из GitHub Releases (распаковать в `public_html/plugins/`).
+
 Языки сайта для motorchk 0.5.x (`"core": "^0.5"`): адреса `/en/…`, переводы Markdown-страниц, словарь строк
 интерфейса, переключатель языка, `hreflang` и `<html lang>`.
 
