@@ -24,6 +24,14 @@
 языке не изменятся. Данные остаются в `plugin-data/i18n/`; файлы переводов `*.en.md` — в `content/`
 (без плагина ядро считает их обычными страницами `/about.en`, см. «Ограничения»).
 
+## Обновление
+
+Релизы — в [GitHub Releases](https://github.com/burzilov/motorchk-plugin-i18n/releases): тег `vX.Y.Z`, архив
+`i18n-X.Y.Z.zip`, внутри папка `i18n/` с `plugin.json`. Имена тега и архива фиксированы; поле
+`"repository": "burzilov/motorchk-plugin-i18n"` в `plugin.json` указывает, где искать обновления. Обновить вручную:
+скачать архив, удалить `public_html/plugins/i18n/` и распаковать архив в `public_html/plugins/`. Данные плагина
+в `plugin-data/i18n/` при этом не трогаются.
+
 ## Адреса
 
 | Язык | Адрес |
