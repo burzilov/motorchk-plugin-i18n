@@ -5,7 +5,7 @@
  *   php tests/run.php [путь/к/core]
  * Путь к ядру: аргумент, переменная MOTORCHK_CORE или ../motorchk/public_html/core рядом с репозиторием плагинов.
  *
- * Создаёт временный сайт (skeleton ядра ≥ 0.4 + этот плагин) в sys_get_temp_dir() и проверяет
+ * Создаёт временный сайт (skeleton ядра ≥ 0.5 + этот плагин) в sys_get_temp_dir() и проверяет
  * установку, службу, определение языка, адреса, переводы страниц, hreflang, переключатель,
  * подписи меню, админку (настройки, словарь, импорт/экспорт) и поведение при повреждённых файлах.
  */
@@ -19,7 +19,7 @@ $pluginRoot = dirname(__DIR__);
 $corePath = $argv[1] ?? (getenv('MOTORCHK_CORE') ?: dirname($pluginRoot, 2) . '/motorchk/public_html/core');
 $corePath = realpath($corePath) ?: $corePath;
 if (!is_file($corePath . '/includes/SiteLocale.php')) {
-    fwrite(STDERR, "Не найдено ядро motorchk ≥ 0.4 в {$corePath}. Укажите путь: php tests/run.php /path/to/core\n");
+    fwrite(STDERR, "Не найдено ядро motorchk ≥ 0.5 в {$corePath}. Укажите путь: php tests/run.php /path/to/core\n");
     exit(2);
 }
 require_once $corePath . '/vendor/autoload.php';
@@ -120,7 +120,7 @@ file_put_contents($site . '/content/about.md', t_page('О нас', "Русски
 file_put_contents($site . '/content/about.en.md', t_page('About us', 'English text. [Team](/team), [admin](/admin-panel/), [file](/plugin-assets/i18n/switcher.css)'));
 file_put_contents($site . '/content/team.md', t_page('Команда', 'Русский текст команды.'));
 file_put_contents($site . '/content/_menus.yaml', "menus:\n  main:\n    label: Основное\n    items:\n      - label: Главная\n        slug: index\n      - slug: about\n      - slug: team\n");
-t_copy($pluginRoot, $site . '/plugins/i18n', ['.git', 'tests', 'dist', 'build.sh']);
+t_copy($pluginRoot, $site . '/plugins/i18n', ['.git', 'tests', 'dist', 'release.sh']);
 $config = [
     'site_path' => $site, 'core_path' => $corePath, 'base_path' => $site,
     'content_path' => $site . '/content', 'cache_path' => $site . '/cache', 'themes_path' => $site . '/themes',
