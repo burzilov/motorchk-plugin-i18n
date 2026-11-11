@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-11-11
+
+Несовместимо с ядром младше 0.8.0 (`"core": ">=0.8.0"`, без верхней границы). Ядро — PR #2
+(`cursor/core-0-8-0-plugins-assets-5eff`), тега `v0.8.0` ещё нет. Workflow релиза гоняет тесты на этой ветке.
+
+- Служба языков регистрируется как `locale` (`SiteLocale::SERVICE`): `"provides": ["locale"]` и `provide('locale', $service)`. Объект по-прежнему реализует `LocaleProvider` (`locales()`, `defaultLocale()`). Имя `i18n` плагин не объявляет, ядро его не ищет.
+- В шаблоне темы объект службы — `$localeProvider`. Переменной `$i18n` ядро больше не задаёт: темы сайтов с `$i18n?->t()` / `$i18n?->switcher()` нужно обновить. В другом плагине — `$plugin->service('locale')`. Классы `.i18n-switcher`, атрибут `data-i18n-switcher` и вставка `<!--i18n:switcher-->` не менялись.
+- `Service::url()` спрашивает служебные пути у ядра (`PluginContext::isSystemPath()`), а не держит свой список префиксов ядра. Свои исключения плагина — только `/uploads` и `/vendor`: ядро их служебными не считает (`/media/` и `/core/vendor/` уже закрывает `isSystemPath()`), но это не страницы, и языковой префикс сломал бы ссылку на файл.
+- Статика плагина — `/plugins-assets/{id}/…` (`assetUrl()`). Старый `/plugin-assets/…` ядро не обслуживает (404, без редиректа) и префикс языка ему не запрещён.
+- Ключ опции `renderPage` в ядре — `locale` (поля `content_locale`, `alternates`, `canonical`). Плагин `renderPage` не вызывает; hreflang страниц плагинов по-прежнему через `alternates` у `renderPublic()`.
+
 ## 0.1.8 — 2026-10-28
 
 - `release.sh` и workflow релиза: version из plugin.json и первая запись CHANGELOG читаются `sed …;q` без `| head -n1` — под `set -o pipefail` ранний выход head давал SIGPIPE (exit 141) на большом CHANGELOG. Код плагина не менялся.

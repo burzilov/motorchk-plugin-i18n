@@ -63,7 +63,7 @@ $tabs = ['settings' => ['/', 'Языки'], 'dictionary' => ['/dictionary', 'С�
                 <?php endforeach; ?>
             </select>
         </label>
-        <label class="i18n-check"><input type="radio" name="switcher" value="manual"<?= ($values['switcher'] ?? '') === 'manual' ? ' checked' : '' ?>> Только там, где он вставлен вручную: <code>&lt;!--i18n:switcher--&gt;</code> в тексте страницы или <code>&lt;?= $i18n?-&gt;switcher() ?&gt;</code> в шаблоне темы</label>
+        <label class="i18n-check"><input type="radio" name="switcher" value="manual"<?= ($values['switcher'] ?? '') === 'manual' ? ' checked' : '' ?>> Только там, где он вставлен вручную: <code>&lt;!--i18n:switcher--&gt;</code> в тексте страницы или <code>&lt;?= $localeProvider?-&gt;switcher() ?&gt;</code> в шаблоне темы</label>
         <label class="i18n-check"><input type="checkbox" name="rewrite_links" value="1"<?= !empty($values['rewrite_links']) ? ' checked' : '' ?>> Переписывать внутренние ссылки в тексте страниц на текущий язык (<code>/about</code> → <code>/en/about</code>)</label>
 
         <p><button type="submit" class="i18n-btn">Сохранить</button></p>
@@ -71,7 +71,7 @@ $tabs = ['settings' => ['/', 'Языки'], 'dictionary' => ['/dictionary', 'С�
 
     <section class="i18n-help">
         <h2 class="i18n-h2">Переводы страниц</h2>
-        <p>Перевод страницы — файл рядом с оригиналом с кодом языка перед <code>.md</code>: <code>content/about.en.md</code> для <code>/en/about</code>, <code>content/index.en.md</code> для <code>/en/</code>. Формат как у обычной страницы. Нет перевода — показывается оригинал (с canonical на него), hreflang выводится только для существующих переводов. Подробнее — в README плагина и <code>core/docs/11-i18n.md</code>.</p>
+        <p>Перевод страницы — файл рядом с оригиналом с кодом языка перед <code>.md</code>: <code>content/about.en.md</code> для <code>/en/about</code>, <code>content/index.en.md</code> для <code>/en/</code>. Формат как у обычной страницы. Нет перевода — показывается оригинал (с canonical на него), hreflang выводится только для существующих переводов. Подробнее — в README плагина и <code>core/docs/11-locale.md</code>.</p>
     </section>
 
 <?php else: ?>
@@ -79,7 +79,7 @@ $tabs = ['settings' => ['/', 'Языки'], 'dictionary' => ['/dictionary', 'С�
     <form method="post" action="<?= $e($plugin->adminUrl('/dictionary')) ?>" class="i18n-form">
         <?= $plugin->csrfField() ?>
         <h1 class="i18n-h1">Словарь интерфейса</h1>
-        <p class="i18n-muted">Строки для шаблонов и плагинов: <code>$i18n-&gt;t('ключ', 'запасной текст')</code>. Пустое значение — берётся основной язык. Подписи меню: ключ <code>menu.{slug}</code> или сама подпись (например, «Главная»).</p>
+        <p class="i18n-muted">Строки для шаблонов и плагинов: <code>$localeProvider?-&gt;t('ключ', 'запасной текст')</code> в теме, <code>$plugin-&gt;service('locale')</code> в другом плагине. Пустое значение — берётся основной язык. Подписи меню: ключ <code>menu.{slug}</code> или сама подпись (например, «Главная»).</p>
         <table class="i18n-table i18n-dict">
             <thead><tr><th>Ключ</th><?php foreach ($locales as $code): ?><th><?= $e($names[$code] ?? $code) ?> <span class="i18n-muted">(<?= $e($code) ?>)</span></th><?php endforeach; ?><th>Удалить</th></tr></thead>
             <tbody>

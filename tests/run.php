@@ -5,7 +5,7 @@
  *   php tests/run.php [путь/к/core]
  * Путь к ядру: аргумент, переменная MOTORCHK_CORE или ../motorchk/public_html/core рядом с репозиторием плагинов.
  *
- * Создаёт временный сайт (skeleton ядра ≥ 0.5 + этот плагин) в sys_get_temp_dir() и проверяет
+ * Создаёт временный сайт (skeleton ядра ≥ 0.8 + этот плагин) в sys_get_temp_dir() и проверяет
  * установку, службу, определение языка, адреса, переводы страниц, hreflang, переключатель,
  * подписи меню, админку (настройки, словарь, импорт/экспорт) и поведение при повреждённых файлах.
  */
@@ -19,7 +19,7 @@ $pluginRoot = dirname(__DIR__);
 $corePath = $argv[1] ?? (getenv('MOTORCHK_CORE') ?: dirname($pluginRoot, 2) . '/motorchk/public_html/core');
 $corePath = realpath($corePath) ?: $corePath;
 if (!is_file($corePath . '/includes/SiteLocale.php')) {
-    fwrite(STDERR, "Не найдено ядро motorchk ≥ 0.5 в {$corePath}. Укажите путь: php tests/run.php /path/to/core\n");
+    fwrite(STDERR, "Не найдено ядро motorchk ≥ 0.8 в {$corePath}. Укажите путь: php tests/run.php /path/to/core\n");
     exit(2);
 }
 require_once $corePath . '/vendor/autoload.php';
@@ -117,7 +117,7 @@ foreach (['content', 'themes', 'config'] as $dir) {
 @mkdir($site . '/cache', 0775, true);
 file_put_contents($site . '/cache/update-check.json', json_encode(['checked_at' => time() + 3600, 'current' => Version::current(), 'update' => null]));
 file_put_contents($site . '/content/about.md', t_page('О нас', "Русский текст. [Команда](/team) и [внешняя](https://example.com/x)\n\n<!--i18n:switcher-->"));
-file_put_contents($site . '/content/about.en.md', t_page('About us', 'English text. [Team](/team), [admin](/admin-panel/), [file](/plugin-assets/i18n/switcher.css)'));
+file_put_contents($site . '/content/about.en.md', t_page('About us', 'English text. [Team](/team), [admin](/admin-panel/), [file](/plugins-assets/i18n/switcher.css), [up](/uploads/a.png), [old](/plugin-assets/i18n/switcher.css)'));
 file_put_contents($site . '/content/team.md', t_page('Команда', 'Русский текст команды.'));
 file_put_contents($site . '/content/_menus.yaml', "menus:\n  main:\n    label: Основное\n    items:\n      - label: Главная\n        slug: index\n      - slug: about\n      - slug: team\n");
 t_copy($pluginRoot, $site . '/plugins/i18n', ['.git', 'tests', 'dist', 'release.sh']);
@@ -160,7 +160,7 @@ out("\n[манифест и установка]\n");
 $manager = new PluginManager($config);
 $info = $manager->discover()['i18n'] ?? null;
 check($info !== null && $info['status'] === 'ok', 'манифест валиден, совместим с ядром', json_encode($info['errors'] ?? null, JSON_UNESCAPED_UNICODE));
-check(($info['provides'] ?? null) === ['i18n'] && ($manager->adminMenu()[0]['label'] ?? null) === 'Языки', 'служба i18n и пункт меню «Языки»');
+check(($info['provides'] ?? null) === ['locale'] && ($manager->adminMenu()[0]['label'] ?? null) === 'Языки', 'служба locale и пункт меню «Языки»');
 $ctx = $manager->boot('i18n');
 I18n\Hooks::$cookieLog = []; // перехват setcookie() (класс доступен после загрузки плагина)
 check($ctx instanceof PluginContext, 'плагин загружается');
@@ -174,12 +174,16 @@ check(count(json_decode((string) file_get_contents($data . '/settings.json'), tr
 
 // ---------------------------------------------------------------- служба
 out("\n[служба]\n");
-$svc = (new PluginManager($config))->service('i18n');
-check($svc instanceof I18n\Service && $svc instanceof LocaleProvider, 'service(i18n) реализует LocaleProvider ядра');
+$svc = (new PluginManager($config))->service(SiteLocale::SERVICE);
+check($svc instanceof I18n\Service && $svc instanceof LocaleProvider, 'service(locale) реализует LocaleProvider ядра');
+check((new PluginManager($config))->service('i18n') === null, 'старое имя службы i18n плагин не регистрирует');
 check($svc->locales() === ['ru', 'en', 'de'] && $svc->defaultLocale() === 'ru' && $svc->names()['de'] === 'Deutsch', 'locales(), defaultLocale(), names()');
 check($svc->url('/about', 'en') === '/en/about' && $svc->url('/', 'en') === '/en/' && $svc->url('/en/about', 'ru') === '/about' && $svc->url('/en/about', 'de') === '/de/about', 'url(): префикс языка, у основного — без префикса, идемпотентно');
 check($svc->url('/about?x=1#top', 'en') === '/en/about?x=1#top' && $svc->url('https://example.com/', 'en') === 'https://example.com/' && $svc->url('#a', 'en') === '#a' && $svc->url('//cdn.test/x', 'en') === '//cdn.test/x', 'url(): query и якорь сохраняются, внешние адреса без изменений');
-check($svc->url('/admin-panel/', 'en') === '/admin-panel/' && $svc->url('/plugin-assets/x/a.css', 'en') === '/plugin-assets/x/a.css' && $svc->url('/api/forms/submit', 'en') === '/api/forms/submit' && $svc->url('/english', 'en') === '/en/english', 'url(): служебные адреса ядра не меняются, /english — не префикс');
+check($svc->url('/admin-panel/', 'en') === '/admin-panel/' && $svc->url('/plugins-assets/x/a.css', 'en') === '/plugins-assets/x/a.css' && $svc->url('/api/forms/submit', 'en') === '/api/forms/submit' && $svc->url('/english', 'en') === '/en/english', 'url(): служебные адреса ядра не меняются, /english — не префикс');
+check($svc->url('/media/a.png', 'en') === '/media/a.png' && $svc->url('/robots.txt', 'en') === '/robots.txt' && $svc->url('/sitemap.xml', 'en') === '/sitemap.xml' && $svc->url('/llms.txt', 'en') === '/llms.txt' && $svc->url('/favicon.ico', 'en') === '/favicon.ico' && $svc->url('/core/VERSION', 'en') === '/core/VERSION' && $svc->url('/themes/example/assets/app.css', 'en') === '/themes/example/assets/app.css', 'url(): isSystemPath() — медиа, SEO-файлы, favicon, /core, /themes');
+check($svc->url('/uploads/a.png', 'en') === '/uploads/a.png' && $svc->url('/uploads/', 'en') === '/uploads/' && $svc->url('/vendor/autoload.php', 'en') === '/vendor/autoload.php' && $svc->url('/vendorish', 'en') === '/en/vendorish', 'url(): свои исключения /uploads и /vendor, соседние slug — с префиксом');
+check($svc->url('/plugin-assets/x/a.css', 'en') === '/en/plugin-assets/x/a.css', 'url(): старый /plugin-assets/ не служебный путь ядра');
 check($svc->url('/about', 'xx') === '/about' && $svc->prefixLocale('/fr/about') === null && $svc->stripPrefix('/de') === '/', 'неизвестный язык — без префикса');
 check($svc->t('i18n.switcher', null, 'en') === 'Language' && $svc->t('i18n.switcher', null, 'de') === 'Язык' && $svc->t('nope', 'Запасной') === 'Запасной' && $svc->t('nope') === 'nope', 't(): язык → основной → fallback → ключ');
 SiteLocale::init(new PluginManager($config), false);
@@ -190,7 +194,7 @@ file_put_contents($data . '/settings.json', json_encode($settingsFile));
 
 // ---------------------------------------------------------------- определение языка
 out("\n[определение языка]\n");
-$hooks = new I18n\Hooks($ctx, $s = (new PluginManager($config))->service('i18n'), new I18n\Settings($ctx), new I18n\Dictionary($ctx));
+$hooks = new I18n\Hooks($ctx, $s = (new PluginManager($config))->service(SiteLocale::SERVICE), new I18n\Settings($ctx), new I18n\Dictionary($ctx));
 $d = $hooks->decide('GET', '/en/about', [], null, null);
 check($d['locale'] === 'en' && $d['path'] === '/about' && $d['redirect'] === null && $d['cookie'] === 'en', 'префикс /en/ → язык en, путь /about, cookie запоминает выбор');
 $d = $hooks->decide('GET', '/about', [], null, null);
@@ -221,12 +225,12 @@ out("\n[страницы сайта]\n");
 [$st, $ru] = $public('/about');
 check($st === 200 && str_contains($ru, 'Русский текст.') && str_contains($ru, '<html lang="ru">'), '/about — оригинал, lang=ru');
 check(str_contains($ru, 'hreflang="ru" href="http://example.test/about"') && str_contains($ru, 'hreflang="en" href="http://example.test/en/about"') && str_contains($ru, 'hreflang="x-default" href="http://example.test/about"'), 'hreflang ru/en/x-default (перевод есть)');
-check(str_contains($ru, '/plugin-assets/i18n/switcher.css?v=') && substr_count($ru, 'data-i18n-switcher') === 1 && !str_contains($ru, 'i18n-switcher--floating') && !str_contains($ru, '<!--i18n:switcher-->'), 'переключатель вместо <!--i18n:switcher--> в тексте, плавающий не добавляется, CSS в <head>');
+check(str_contains($ru, '/plugins-assets/i18n/switcher.css?v=') && substr_count($ru, 'data-i18n-switcher') === 1 && !str_contains($ru, 'i18n-switcher--floating') && !str_contains($ru, '<!--i18n:switcher-->'), 'переключатель вместо <!--i18n:switcher--> в тексте, плавающий не добавляется, CSS в <head>');
 check(str_contains($ru, '<a href="/en/about" hreflang="en" lang="en">English</a>') && str_contains($ru, 'href="/about" hreflang="ru" lang="ru" aria-current="true"'), 'ссылки переключателя на текущую страницу');
 check(str_contains($ru, 'href="/team"') && $cookies() === [], 'основной язык: ссылки без изменений, cookie нет');
 [$st, $en] = $public('/en/about');
 check($st === 200 && str_contains($en, 'English text.') && str_contains($en, '<html lang="en">') && str_contains($en, '<title>About us</title>'), '/en/about — перевод, lang=en');
-check(str_contains($en, 'href="/en/team"') && str_contains($en, 'href="/admin-panel/"') && str_contains($en, 'href="/plugin-assets/i18n/switcher.css"'), 'ссылки в тексте перевода → /en/…, служебные — без изменений');
+check(str_contains($en, 'href="/en/team"') && str_contains($en, 'href="/admin-panel/"') && str_contains($en, 'href="/plugins-assets/i18n/switcher.css"') && str_contains($en, 'href="/uploads/a.png"') && str_contains($en, 'href="/en/plugin-assets/i18n/switcher.css"'), 'ссылки в тексте перевода → /en/…; служебные и /uploads — без изменений; старый /plugin-assets/ получает префикс');
 check(str_contains($en, '>Home</a>') === false && str_contains($en, 'href="/en/"') && str_contains($en, '>About us</a>'), 'меню: ссылки /en/, подпись из перевода страницы');
 check(str_contains($en, 'i18n-switcher--floating i18n-switcher--bottom-right') && str_contains($en, '<a href="/about" hreflang="ru" lang="ru">Русский</a>') && str_contains($en, 'aria-label="Language"'), 'плавающий переключатель на странице без вставки, подпись из словаря');
 check($cookies() === ['en'], 'cookie site_locale=en');
@@ -329,7 +333,7 @@ check($st === 302 && $dict === ['added' => ['ru' => "Две\nстроки", 'en'
 [$st, $body] = $call('POST', '/dictionary', ['rows' => [['key' => 'a', 'values' => ['ru' => '1']], ['key' => 'a', 'values' => ['ru' => '2']], ['key' => '', 'values' => ['en' => 'orphan']]]]);
 check($st === 422 && str_contains($body, 'повторяется') && str_contains($body, 'нет ключа') && count(json_decode((string) file_get_contents($data . '/dictionary.json'), true)) === 3, 'словарь: дубли и строки без ключа → 422, файл не меняется');
 [$st, $body] = $admin('/admin-panel/plugins/i18n');
-check($st === 200 && str_contains($body, '/plugin-assets/i18n/admin.css') && preg_match('#<td>1</td>#', $body) === 1, 'страница «Языки»: число переводов страниц (about.en.md)');
+check($st === 200 && str_contains($body, '/plugins-assets/i18n/admin.css') && !str_contains($body, '/plugin-assets/') && preg_match('#<td>1</td>#', $body) === 1, 'страница «Языки»: число переводов страниц (about.en.md)');
 $_SESSION = []; // вход в админку и CSRF проверяет ядро (core/tests/plugins.php)
 
 ob_end_clean();

@@ -1,8 +1,9 @@
 <?php
 
 /**
- * Плагин «Мультиязычность» (i18n) для motorchk ≥ 0.4.
- * Служба «i18n» (языки, словарь, адреса, переключатель) и хуки сайта; настройки — в админке.
+ * Плагин «Мультиязычность» (i18n) для motorchk ≥ 0.8.
+ * Служба «locale» (SiteLocale::SERVICE: языки, словарь, адреса, переключатель) и хуки сайта;
+ * настройки — в админке. Имя службы «i18n» ядро 0.8 не ищет.
  */
 
 use I18n\AdminController;
@@ -14,9 +15,9 @@ use I18n\Settings;
 return static function (PluginContext $plugin): void {
     $settings = new Settings($plugin);
     $dictionary = new Dictionary($plugin);
-    $service = new Service($settings, $dictionary);
+    $service = new Service($plugin, $settings, $dictionary);
 
-    $plugin->provide('i18n', $service);
+    $plugin->provide(SiteLocale::SERVICE, $service);
 
     // первая установка: настройки по умолчанию (ru — основной, en), существующий файл не трогаем
     $plugin->onInstall(static function (?string $from, string $to, PluginContext $plugin): void {

@@ -3,24 +3,36 @@
 namespace I18n;
 
 use LocaleProvider;
+use PluginContext;
 use SiteLocale;
 
 /**
- * Служба «i18n» — $plugin->service('i18n') в других плагинах и $i18n в шаблонах темы.
+ * Служба «locale» — $plugin->service('locale') в других плагинах и $localeProvider в шаблонах темы.
+ * Имя — SiteLocale::SERVICE. Ядро 0.8 переменную $i18n в тему не передаёт.
  *
- *   $i18n->locale()                       текущий язык ('ru', 'en')
- *   $i18n->t('cart.add', 'В корзину')     строка словаря на текущем языке → основном → $fallback → ключ
- *   $i18n->url('/about', 'en')            адрес на языке: '/en/about'
- *   $i18n->switcher()                     HTML переключателя языка
+ *   $localeProvider->locale()                       текущий язык ('ru', 'en')
+ *   $localeProvider->t('cart.add', 'В корзину')     строка словаря на текущем языке → основном → $fallback → ключ
+ *   $localeProvider->url('/about', 'en')            адрес на языке: '/en/about'
+ *   $localeProvider->switcher()                     HTML переключателя языка
  */
 final class Service implements LocaleProvider
 {
-    /** Пути, которые не получают языковой префикс (служебные адреса ядра). */
-    public const EXCLUDED = ['/admin-panel', '/plugin-assets', '/core', '/api', '/themes', '/uploads', '/media', '/content', '/cache', '/vendor'];
+    /**
+     * Пути, которые ядро не считает служебными (isSystemPath() === false), но языковой префикс им не нужен.
+     *
+     * /uploads — файлы вне каталога медиа ядра (/media/ уже закрывает isSystemPath()).
+     *            Ссылка /uploads/a.png с префиксом стала бы /en/uploads/a.png и не нашла бы файл.
+     * /vendor  — каталог Composer в корне сайта. /core/vendor/ ядро уже считает служебным,
+     *            корень /vendor/ — нет. Страница со slug vendor плагину не нужна.
+     *
+     * Старый /plugin-assets/ сюда не входит: ядро 0.8 его не обслуживает (404 без редиректа)
+     * и не считает служебным. Актуальная статика — /plugins-assets/ (isSystemPath()).
+     */
+    public const EXCLUDED = ['/uploads', '/vendor'];
 
     private ?string $routedPath = null;
 
-    public function __construct(private Settings $settings, private Dictionary $dictionary)
+    public function __construct(private PluginContext $plugin, private Settings $settings, private Dictionary $dictionary)
     {
     }
 
@@ -71,16 +83,32 @@ final class Service implements LocaleProvider
         $cut = strcspn($path, '?#');
         $rest = substr($path, $cut);
         $bare = $this->stripPrefix(substr($path, 0, $cut));
-        foreach (self::EXCLUDED as $excluded) {
-            if ($bare === $excluded || str_starts_with($bare, $excluded . '/')) {
-                return $path;
-            }
+        if ($this->skipped($bare)) {
+            return $path;
         }
         if ($locale === $this->defaultLocale() || !in_array($locale, $this->locales(), true)) {
             return $bare . $rest;
         }
 
         return '/' . $locale . ($bare === '/' ? '/' : $bare) . $rest;
+    }
+
+    /**
+     * Служебный путь ядра или собственное исключение плагина (EXCLUDED).
+     * Префикс языка такому пути не добавляется.
+     */
+    private function skipped(string $path): bool
+    {
+        if ($this->plugin->isSystemPath($path)) {
+            return true;
+        }
+        foreach (self::EXCLUDED as $excluded) {
+            if ($path === $excluded || str_starts_with($path, $excluded . '/')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** '/en/about' → '/about'; путь без префикса — как есть. */
