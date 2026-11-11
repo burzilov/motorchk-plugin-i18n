@@ -11,8 +11,7 @@ permissions:
 
 env:
   # Ядро для тестов (tests/run.php требует core с vendor/). Поднимайте вместе с "core" в plugin.json.
-  # 0.8.0 ещё без тега: PR https://github.com/burzilov/motorchk/pull/2. После тега замените на v0.8.0.
-  CORE_REF: cursor/core-0-8-0-plugins-assets-5eff
+  CORE_REF: v0.8.0
 
 jobs:
   release:
