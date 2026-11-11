@@ -161,8 +161,8 @@ $locale?->switcher();
 php tests/run.php /путь/к/public_html/core   # или MOTORCHK_CORE=…; по умолчанию ../motorchk/public_html/core
 ```
 
-Нужно ядро 0.8.0 (ветка `cursor/core-0-8-0-plugins-assets-5eff`, PR #2 в `burzilov/motorchk`, пока без тега)
-с установленным `vendor/`. Временный сайт из skeleton ядра + плагин: служба `locale`, определение языка,
+Нужно ядро 0.8.0 (тег `v0.8.0` в `burzilov/motorchk`) с установленным `vendor/`.
+Временный сайт из skeleton ядра + плагин: служба `locale`, определение языка,
 адреса, переводы, hreflang, переключатель, меню, админка (настройки, словарь, импорт/экспорт), повреждённые файлы.
 
 ## Лицензия
